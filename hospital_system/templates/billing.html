@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Billing System | CarePulse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col justify-between">
+
+    <!-- Top Navigation Bar -->
+    <nav class="bg-indigo-900 text-white p-4 flex justify-between items-center shadow-lg sticky top-0 z-50">
+        <a href="/" class="text-2xl font-bold flex items-center space-x-2">
+            <span>🏥</span> <span>CarePulse Billing</span>
+        </a>
+        <div class="space-x-4 font-medium">
+            <a href="/dashboard" class="hover:text-indigo-300 transition">Dashboard</a>
+            <a href="/patients" class="hover:text-indigo-300 transition">Patients</a>
+            <a href="/doctors" class="hover:text-indigo-300 transition">Doctors</a>
+            <a href="/prescriptions" class="hover:text-indigo-300 transition">Prescriptions</a>
+            <a href="/billing" class="underline text-indigo-300 font-semibold">Billing</a>
+            <a href="/logout" class="bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded text-xs transition">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="p-6 md:p-8 max-w-5xl mx-auto space-y-6 w-full flex-grow">
+        
+        <!-- Header & Action Row -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl shadow border border-slate-200">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Hospital Billing Dashboard</h1>
+                <p class="text-xs text-slate-500">Generate patient invoices, track pending bills, and process simulated payments.</p>
+            </div>
+            <button onclick="openModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition shadow">
+                + Create New Bill
+            </button>
+        </div>
+
+        <!-- Invoices Table Container -->
+        <div class="bg-white rounded-xl shadow overflow-hidden border border-slate-200">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase text-slate-600">
+                            <th class="p-4">Invoice #</th>
+                            <th class="p-4">Patient Name</th>
+                            <th class="p-4">Date</th>
+                            <th class="p-4">Amount ($)</th>
+                            <th class="p-4">Status</th>
+                            <th class="p-4 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="billingTableBody" class="divide-y divide-slate-100 text-sm">
+                        <tr><td colspan="6" class="p-8 text-center text-slate-400">Loading billing records...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Bill Modal -->
+    <div id="billModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <h3 class="text-xl font-bold text-indigo-900">Generate Patient Bill</h3>
+            
+            <form id="billForm" onsubmit="submitNewBill(event)" class="space-y-4">
+                <div>
+                    <label for="patientName" class="block text-xs font-bold text-slate-700 mb-1">Patient Name *</label>
+                    <input type="text" id="patientName" required placeholder="e.g. John Doe" class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-sm">
+                </div>
+                <div>
+                    <label for="billAmount" class="block text-xs font-bold text-slate-700 mb-1">Total Amount ($) *</label>
+                    <input type="number" id="billAmount" step="0.01" min="1" required placeholder="e.g. 150.00" class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-sm">
+                </div>
+                <div class="flex space-x-3 pt-2">
+                    <button type="button" onclick="closeModal()" class="w-1/2 bg-slate-200 text-slate-700 py-2 rounded-lg font-semibold hover:bg-slate-300 transition text-sm">Cancel</button>
+                    <button type="submit" id="saveBillBtn" class="w-1/2 bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 transition text-sm">Create Invoice</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-4 text-center text-xs border-t border-slate-800">
+        <p>&copy; 2026 CarePulse Hospital Management System</p>
+    </footer>
+
+    <!-- Client Script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", loadBills);
+
+        async function loadBills() {
+            const tbody = document.getElementById("billingTableBody");
+            try {
+                const res = await fetch("/api/billing");
+                if (!res.ok) throw new Error("Failed to load bills");
+
+                const bills = await res.json();
+                
+                if (!bills || bills.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">No active billing records found.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = bills.map(b => {
+                    const billId = b.id || b._id;
+                    const isPaid = b.status === 'Paid';
+                    
+                    return `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="p-4 font-mono text-xs font-bold text-slate-500">#INV-${escapeHtml(billId)}</td>
+                            <td class="p-4 font-semibold text-slate-800">${escapeHtml(b.patient_name)}</td>
+                            <td class="p-4 text-xs text-slate-500">${escapeHtml(b.date || 'N/A')}</td>
+                            <td class="p-4 font-mono font-bold text-slate-700">$${Number(b.amount).toFixed(2)}</td>
+                            <td class="p-4">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-bold ${isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                                    ${escapeHtml(b.status)}
+                                </span>
+                            </td>
+                            <td class="p-4 text-right">
+                                ${!isPaid ? 
+                                    `<button onclick="payBill(${billId})" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-emerald-700 transition shadow">Pay Now</button>` : 
+                                    '<span class="text-slate-400 text-xs italic">Paid in Full</span>'
+                                }
+                            </td>
+                        </tr>
+                    `;
+                }).join("");
+
+            } catch (err) {
+                console.error("Error loading bills:", err);
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-rose-500 font-medium">Failed to retrieve billing data.</td></tr>`;
+            }
+        }
+
+        async function payBill(id) {
+            if (!confirm("Confirm payment simulation for this invoice?")) return;
+
+            try {
+                const res = await fetch(`/api/billing/pay/${id}`, { method: "POST" });
+                if (res.ok) {
+                    loadBills();
+                } else {
+                    alert("Payment processing failed.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Network error processing payment.");
+            }
+        }
+
+        function openModal() {
+            document.getElementById("billModal").classList.remove("hidden");
+        }
+
+        function closeModal() {
+            document.getElementById("billModal").classList.add("hidden");
+            document.getElementById("billForm").reset();
+        }
+
+        async function submitNewBill(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById("saveBillBtn");
+            
+            const payload = {
+                patient_name: document.getElementById("patientName").value.trim(),
+                amount: parseFloat(document.getElementById("billAmount").value)
+            };
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Creating...";
+
+            try {
+                const res = await fetch("/api/billing", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    closeModal();
+                    loadBills();
+                } else {
+                    alert("Failed to create invoice.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Network error creating invoice.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Create Invoice";
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, m => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            }[m]));
+        }
+    </script>
+</body>
+</html>

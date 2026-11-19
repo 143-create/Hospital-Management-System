@@ -1,0 +1,166 @@
+/* ==========================================
+   CarePulse Hospital System - Custom Styles
+   ========================================== */
+
+/* Base & Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+    background-color: #f8fafc; /* slate-50 */
+    color: #1e293b; /* slate-800 */
+    margin: 0;
+    padding: 0;
+}
+
+/* Custom Card Hover Effects */
+.card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Table Enhancements */
+table th {
+    font-weight: 600;
+    color: #334155;
+    background-color: #f1f5f9;
+}
+
+table tr {
+    transition: background-color 0.15s ease;
+}
+
+table tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Print Styles for Prescriptions & Invoices */
+@media print {
+    nav, button, footer {
+        display: none !important;
+    }
+    body {
+        background-color: white !important;
+    }
+    .shadow, .shadow-md, .shadow-lg {
+        box-shadow: none !important;
+    }
+}
+
+/* Shared CarePulse application theme */
+.care-page {
+    min-height: 100vh;
+    background: #f7fbfa !important;
+    color: #102a43;
+    font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+.care-page h1, .care-page h2, .care-page h3, .care-page h4, .care-page h5,
+.care-page .navbar-brand, .care-page .card-title {
+    font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+}
+
+.care-page nav:not(.pagination) {
+    background: rgba(16, 42, 67, .97) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+
+.care-page nav:not(.pagination) a { transition: color .2s ease, background .2s ease; }
+.care-page nav:not(.pagination) a:hover { color: #8ee5c7 !important; }
+.care-page .navbar-brand { letter-spacing: -.03em; }
+.care-page .navbar-brand::first-letter { color: #8ee5c7; }
+
+.care-page .card,
+.care-page .bg-white\/95,
+.care-page .bg-white {
+    border: 1px solid #e1ece9 !important;
+    border-radius: 1.25rem !important;
+    box-shadow: 0 12px 35px rgba(16, 42, 67, .06) !important;
+}
+
+.care-page .card { background: rgba(255, 255, 255, .92) !important; }
+.care-page .card:hover { box-shadow: 0 18px 42px rgba(16, 42, 67, .1) !important; }
+.care-page .btn-primary,
+.care-page .bg-indigo-600 { background-color: #0f766e !important; border-color: #0f766e !important; }
+.care-page .btn-primary:hover,
+.care-page .bg-indigo-600:hover { background-color: #115e59 !important; border-color: #115e59 !important; }
+.care-page .btn-success { background-color: #0f766e !important; border-color: #0f766e !important; }
+.care-page .text-primary, .care-page .text-indigo-600, .care-page .text-indigo-700,
+.care-page .text-indigo-900 { color: #0f766e !important; }
+.care-page .bg-primary { background-color: #102a43 !important; }
+.care-page .bg-indigo-900, .care-page .bg-indigo-950 { background-color: #102a43 !important; }
+.care-page .bg-indigo-50 { background-color: #eefaf6 !important; }
+
+.care-page input:not([type='hidden']), .care-page select, .care-page textarea {
+    border-color: #cbded9 !important;
+    border-radius: .8rem !important;
+    background-color: #fbfefd !important;
+    color: #102a43 !important;
+}
+.care-page input:focus, .care-page select:focus, .care-page textarea:focus {
+    border-color: #0f766e !important;
+    box-shadow: 0 0 0 .22rem rgba(15, 118, 110, .14) !important;
+    outline: none;
+}
+.care-page .table thead th, .care-page table th {
+    background: #eefaf6 !important;
+    color: #31566e !important;
+    border-bottom-color: #d7e8e3 !important;
+}
+.care-page .table > :not(caption) > * > *, .care-page table td { border-bottom-color: #e5efec; }
+.care-page .table-hover > tbody > tr:hover, .care-page table tr:hover { background: #f4fbf8 !important; }
+.care-page footer { background: #102a43 !important; color: #b7c9d3 !important; }
+
+/* Dashboard */
+.care-page .hover-card { border-top: 3px solid #8ee5c7 !important; }
+.care-page #departmentTableBody strong { color: #102a43; }
+.care-page .pagination .page-link { color: #0f766e; border-color: #d7e8e3; }
+.care-page .pagination .active .page-link { background: #0f766e; border-color: #0f766e; color: #fff; }
+
+/* Auth pages */
+.care-auth {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    padding: 2rem 1rem;
+    background: radial-gradient(circle at 15% 10%, #dff7ef 0, transparent 32%), #f7fbfa !important;
+}
+.care-auth .card { width: min(100%, 30rem); max-width: 30rem; padding: 2.25rem !important; }
+.care-auth h3 { color: #102a43 !important; font-weight: 800; }
+.care-auth a { color: #0f766e; font-weight: 600; }
+.care-auth .form-label { color: #31566e; font-weight: 700; font-size: .88rem; }
+.care-auth .otp-input { letter-spacing: .5rem; font-size: 1.5rem; font-weight: 700; }
+
+/* Tailwind page refinements */
+.care-page .text-indigo-300 { color: #8ee5c7 !important; }
+.care-page .border-indigo-800 { border-color: rgba(255,255,255,.12) !important; }
+.care-page .bg-indigo-100 { background: #dff7ef !important; }
+.care-page .bg-emerald-100 { background: #dff7ef !important; }
+.care-page .text-emerald-800 { color: #0f766e !important; }
+.care-page .bg-slate-900 { background: #102a43 !important; }
+.care-page .text-slate-800 { color: #102a43 !important; }

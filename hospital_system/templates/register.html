@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | CarePulse Hospital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white max-w-md w-full rounded-2xl shadow-xl p-8 space-y-6 border border-slate-200">
+        <div class="text-center">
+            <h1 class="text-2xl font-bold text-indigo-900">Create CarePulse Account</h1>
+            <p class="text-sm text-slate-500 mt-1">Verify your email with a 6-digit OTP to continue</p>
+        </div>
+
+        <form id="registerForm" onsubmit="sendOTP(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+                <input type="text" id="regName" required placeholder="Narayan Barman" class="w-full border p-2.5 rounded-lg text-sm bg-slate-50">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">User ID (Optional)</label>
+                    <input type="text" id="regUserId" placeholder="PAT-101" class="w-full border p-2.5 rounded-lg text-sm bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Phone</label>
+                    <input type="tel" id="regPhone" placeholder="9876543210" class="w-full border p-2.5 rounded-lg text-sm bg-slate-50">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Email Address *</label>
+                <input type="email" id="regEmail" required placeholder="you@gmail.com" class="w-full border p-2.5 rounded-lg text-sm bg-slate-50">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Password *</label>
+                    <input type="password" id="regPassword" required placeholder="••••••••" class="w-full border p-2.5 rounded-lg text-sm bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Role</label>
+                    <select id="regRole" class="w-full border p-2.5 rounded-lg text-sm bg-slate-50">
+                        <option value="Patient">Patient</option>
+                        <option value="Doctor">Doctor</option>
+                        <option value="Staff">Staff</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" id="sendOtpBtn" class="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition text-sm">
+                Send OTP to Email
+            </button>
+        </form>
+
+        <!-- OTP Verification Box -->
+        <form id="otpBox" onsubmit="verifyOTP(event)" class="hidden pt-4 border-t border-slate-200 space-y-3">
+            <div class="flex justify-between items-center">
+                <label class="block text-xs font-bold text-emerald-700">Enter 6-Digit Email OTP *</label>
+                <span id="otpSentTo" class="text-[11px] text-slate-500"></span>
+            </div>
+            <input type="text" id="otpCode" maxlength="6" inputmode="numeric" required placeholder="123456" class="w-full border-2 border-emerald-400 p-2.5 rounded-lg text-center tracking-widest font-mono text-lg">
+            <button type="submit" id="verifyOtpBtn" class="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-semibold hover:bg-emerald-700 transition text-sm">
+                Verify & Complete
+            </button>
+        </form>
+
+        <p class="text-center text-xs text-slate-500">
+            Already verified? <a href="/login" class="text-indigo-600 font-semibold hover:underline">Log in</a>
+        </p>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/auth.js') }}?v=2"></script>
+</body>
+</html>

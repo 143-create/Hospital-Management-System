@@ -1,0 +1,10 @@
+{
+  "name": "hospital_system",
+  "version": "1.0.0",
+  "description": "CarePulse Hospital Management System",
+  "author": "Narayan",
+  "scripts": {
+    "start": "python app.py",
+    "test": "python test_suite.py"
+  }
+}

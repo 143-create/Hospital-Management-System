@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarePulse Hospital - Analytics Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Chart.js for Visual Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .hover-card {
+            transition: transform 0.2s ease, shadow 0.2s ease;
+        }
+        .hover-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+    </style>
+</head>
+<body class="care-page">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/dashboard">
+                <i class="fa-solid fa-hospital me-2"></i>CarePulse Hospital
+            </a>
+            <div class="navbar-nav me-auto d-none d-lg-flex">
+                <a class="nav-link active" href="/dashboard">Dashboard</a>
+                <a class="nav-link" href="/patients">Patients</a>
+                <a class="nav-link" href="/doctors">Doctors</a>
+                <a class="nav-link" href="/prescriptions">Prescriptions</a>
+                <a class="nav-link" href="/billing">Billing</a>
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="text-white me-3 d-none d-md-inline">
+                    Welcome, <strong id="navUserName">{{ user_name if user_name else 'User' }}</strong> 
+                    (<em id="navUserRole">{{ user_role if user_role else 'Staff' }}</em>)
+                </span>
+                <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container my-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="text-dark fw-bold mb-0">Hospital Analytics Dashboard</h2>
+                <p class="text-muted small">Real-time metrics and patient distribution breakdown</p>
+            </div>
+            <button onclick="fetchAnalytics()" class="btn btn-sm btn-outline-primary">
+                <i class="fa-solid fa-rotate me-1"></i> Refresh Data
+            </button>
+        </div>
+
+        <!-- Metrics Cards Row -->
+        <div class="row g-4 mb-5">
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm border-0 bg-white p-3 hover-card">
+                    <div class="d-flex align-items-center">
+                        <div class="fs-1 text-primary me-3"><i class="fa-solid fa-user-injured"></i></div>
+                        <div>
+                            <h6 class="text-muted mb-1 small text-uppercase fw-bold">Total Patients</h6>
+                            <h3 id="totalPatients" class="fw-bold mb-0 text-dark">--</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm border-0 bg-white p-3 hover-card">
+                    <div class="d-flex align-items-center">
+                        <div class="fs-1 text-success me-3"><i class="fa-solid fa-user-doctor"></i></div>
+                        <div>
+                            <h6 class="text-muted mb-1 small text-uppercase fw-bold">Total Doctors</h6>
+                            <h3 id="totalDoctors" class="fw-bold mb-0 text-dark">--</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm border-0 bg-white p-3 hover-card">
+                    <div class="d-flex align-items-center">
+                        <div class="fs-1 text-warning me-3"><i class="fa-solid fa-file-prescription"></i></div>
+                        <div>
+                            <h6 class="text-muted mb-1 small text-uppercase fw-bold">Prescriptions</h6>
+                            <h3 id="totalPrescriptions" class="fw-bold mb-0 text-dark">--</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm border-0 bg-white p-3 hover-card">
+                    <div class="d-flex align-items-center">
+                        <div class="fs-1 text-danger me-3"><i class="fa-solid fa-dollar-sign"></i></div>
+                        <div>
+                            <h6 class="text-muted mb-1 small text-uppercase fw-bold">Total Revenue</h6>
+                            <h3 id="totalRevenue" class="fw-bold mb-0 text-dark">$0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts & Analytics Section -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-7">
+                <div class="card border-0 shadow-sm p-4 h-100">
+                    <h5 class="fw-bold text-slate-800 mb-3">Patient Distribution by Department</h5>
+                    <div class="position-relative flex-grow-1 d-flex align-items-center justify-center" style="min-height: 250px;">
+                        <canvas id="departmentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="card border-0 shadow-sm p-4 h-100">
+                    <h5 class="fw-bold text-slate-800 mb-3">Department Summary</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Department</th>
+                                    <th class="text-end">Patient Count</th>
+                                </tr>
+                            </thead>
+                            <tbody id="departmentTableBody">
+                                <tr><td colspan="2" class="text-center text-muted py-3">Loading breakdown...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Navigation Links -->
+        <h5 class="fw-bold text-dark mb-3">Quick Navigation</h5>
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <a href="/patients" class="text-decoration-none">
+                    <div class="card text-center p-3 shadow-sm hover-card bg-white text-dark border-0">
+                        <i class="fa-solid fa-users fs-2 mb-2 text-primary"></i>
+                        <h6 class="fw-bold mb-0">Manage Patients</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="/doctors" class="text-decoration-none">
+                    <div class="card text-center p-3 shadow-sm hover-card bg-white text-dark border-0">
+                        <i class="fa-solid fa-stethoscope fs-2 mb-2 text-success"></i>
+                        <h6 class="fw-bold mb-0">Doctors Directory</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="/prescriptions" class="text-decoration-none">
+                    <div class="card text-center p-3 shadow-sm hover-card bg-white text-dark border-0">
+                        <i class="fa-solid fa-file-medical fs-2 mb-2 text-warning"></i>
+                        <h6 class="fw-bold mb-0">Prescriptions</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="/billing" class="text-decoration-none">
+                    <div class="card text-center p-3 shadow-sm hover-card bg-white text-dark border-0">
+                        <i class="fa-solid fa-file-invoice-dollar fs-2 mb-2 text-danger"></i>
+                        <h6 class="fw-bold mb-0">Billing & Payments</h6>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript to Fetch Analytics & Render Chart -->
+    <script>
+        let chartInstance = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Restore user info from sessionStorage if Jinja context is empty
+            const localUser = sessionStorage.getItem('userName');
+            const localRole = sessionStorage.getItem('userRole');
+            if (localUser) document.getElementById('navUserName').innerText = localUser;
+            if (localRole) document.getElementById('navUserRole').innerText = localRole;
+
+            fetchAnalytics();
+        });
+
+        async function fetchAnalytics() {
+            try {
+                const response = await fetch('/api/analytics');
+                if (!response.ok) throw new Error('Analytics request failed');
+
+                const data = await response.json();
+                
+                // Update Top Metric Cards
+                const metrics = data.metrics || {};
+                document.getElementById('totalPatients').innerText = metrics.total_patients ?? 0;
+                document.getElementById('totalDoctors').innerText = metrics.total_doctors ?? 0;
+                document.getElementById('totalPrescriptions').innerText = metrics.total_prescriptions ?? 0;
+                
+                const revenue = metrics.total_revenue ?? 0;
+                document.getElementById('totalRevenue').innerText = `$${Number(revenue).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                // Render Departmental Chart & Table
+                const departments = data.departments || [];
+                renderDepartmentData(departments);
+
+            } catch (err) {
+                console.error("Error fetching analytics:", err);
+            }
+        }
+
+        function renderDepartmentData(departments) {
+            const tableBody = document.getElementById('departmentTableBody');
+            tableBody.innerHTML = '';
+
+            if (departments.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="2" class="text-center text-muted py-3">No departmental records found.</td></tr>`;
+                if (chartInstance) chartInstance.destroy();
+                return;
+            }
+
+            const labels = [];
+            const counts = [];
+            const backgroundColors = [
+                '#4f46e5', '#10b981', '#f59e0b', '#ef4444', 
+                '#8b5cf6', '#06b6d4', '#ec4899', '#64748b'
+            ];
+
+            departments.forEach((dept, index) => {
+                const name = dept.department || dept._id || 'General';
+                const count = dept.count || 0;
+                labels.push(name);
+                counts.push(count);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <span class="d-inline-block rounded-circle me-2" style="width: 10px; height: 10px; background-color: ${backgroundColors[index % backgroundColors.length]}"></span>
+                        <strong>${escapeHtml(name)}</strong>
+                    </td>
+                    <td class="text-end font-monospace fw-bold">${count}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Initialize or Update Chart.js Doughnut Chart
+            const ctx = document.getElementById('departmentChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: backgroundColors.slice(0, labels.length),
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, m => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            }[m]));
+        }
+    </script>
+</body>
+</html>
